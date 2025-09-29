@@ -1,0 +1,42 @@
+# Node modules
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# dotenv environment files
+.env
+.env.local
+.env.test
+.env.production
+
+# Optional: example env file stays committed
+!.env.example
+
+# Coverage (from Jest or testing)
+coverage/
+
+# Build output
+dist/
+build/
+
+# Editor-specific
+.vscode/
+.idea/
+
+# Mac/Linux/Windows system files
+.DS_Store
+Thumbs.db
+
+# Lint/format caches
+.eslintcache
+.prettiercache
