@@ -1,16 +1,15 @@
 const Koa = require('koa');
 const serve = require('koa-static'); // used for serving static files later
-const websockify = require('koa-websocket');
+const websocket = require('koa-websocket');
+const handlers = require('./src/handlers');
+const state = require('./src/state');
 
-
-const app = websockify(new Koa());
+const app = websocket(new Koa());
 
 // WebSocket route
 app.ws.use((ctx) => {
   console.log('Connected!');
-
-  // Send welcome message
-  ctx.websocket.send('Welcome to the chatroom');
+  state.clients.set(ctx, { username: "Snabes", room: "lobby" });
 
   // Listen for incoming messages
   ctx.websocket.on('message', (messageJSON) => {
@@ -19,21 +18,27 @@ app.ws.use((ctx) => {
       message = JSON.parse(messageJSON);
     } catch (e) {
       console.error('Invalid JSON received:', messageJSON);
-      ctx.websocket.send('Error: Invalid JSON format');
+      ctx.websocket.send('Error: Message could not be parsed');
       return;
     }
 
-    const sender = message.sender;
-    const content = message.content;
-    const type = message.type; // commands like join, leave, etc.
-    
-    // Echo back to users with sender info
-    ctx.websocket.send(`${sender}: ${content}`);
+    const handler = handlers[message.type];
+
+    if (handler) {
+      handler(ctx, message);
+    } else if (message.type == '/join') {
+      
+    } else if (message.type == '/quit') {
+
+    } else {
+      console.warn('Unknown command type:', message.type);
+    }
   });
 
   // Handle connection close
   ctx.websocket.on('close', () => {
     console.log('Chat client disconnected');
+    handlers.quit(ctx);
   });
 });
 
