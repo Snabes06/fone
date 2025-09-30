@@ -1,13 +1,14 @@
+const os = require('os');
 const Koa = require('koa');
 const websocket = require('koa-websocket');
-const handlers = require('./handlers'); // correct
+const handlers = require('./handlers');
 const state = require('./state');
-//const serve = require('koa-static'); // used for serving static files later
-//const path = require('path'); // used for serving static files later
+const serve = require('koa-static');
+const path = require('path');
 
 const ogKoa = new Koa();
 const app = websocket(ogKoa);
-//ogKoa.use(serve(path.join(__dirname, '/static'), { index: 'temp.html' })) // Serve static files from the 'static' directory
+ogKoa.use(serve(path.join(__dirname, '/static'), { index: 'index.html' })) // Serve static files from the 'static' directory
 
 // List users in the same room
 function list(ctx) {
@@ -16,15 +17,18 @@ function list(ctx) {
   const users = [];
 
   if (state.rooms.has(room)) {
-    // Iterate over clients in the room and collect usernames
     for (const client of state.rooms.get(room)) {
       const cinfo = state.clients.get(client) || {};
       users.push(cinfo.username || "Anonymous");
     }
   }
 
-  // Send the list of users back to the requester
-  ctx.websocket.send(JSON.stringify({ type: "list", message: users.join(", ") }));
+  ctx.websocket.send(JSON.stringify({
+    type: "list",
+    users,                // array of usernames
+    count: users.length,  // number of users
+    room                  // which room this is
+  }));
 }
 
 // Handle user quitting
@@ -32,23 +36,46 @@ function quit(ctx) {
   const info = state.clients.get(ctx) || {};
   const room = info.room;
 
-  if (room && state.rooms.has(room)) {
-    state.rooms.get(room).delete(ctx);
-    if (state.rooms.get(room).size === 0) {
-      state.rooms.delete(room);
-    }
+  // Notify if user is not in a room
+  if (!room || !state.rooms.has(room)) {
+    ctx.websocket.send(JSON.stringify({
+      type: 'error',
+      message: 'You are not in a room'
+    }));
+    return;
   }
 
-  state.clients.delete(ctx);
-  ctx.websocket.close();
+  // Notify the leaving user
+  ctx.websocket.send(JSON.stringify({
+    type: 'system',
+    message: `You have left the room: ${room}`
+  }));
+
+  // Remove client from the room
+  state.rooms.get(room).delete(ctx);
+
+  // Clean up if room is empty
+  if (state.rooms.get(room).size === 0) {
+    state.rooms.delete(room);
+  }
+
+  // Broadcast to remaining clients
+  for (const client of state.rooms.get(room) || []) {
+    client.websocket.send(JSON.stringify({
+      type: 'system',
+      message: `${info.username || "Anonymous"} has left the room`
+    }));
+  }
+
+  // Update client state (still connected, just no room)
+  info.room = null;
+  state.clients.set(ctx, info);
 }
-
-
 
 // WebSocket route
 app.ws.use((ctx) => {
   console.log('Connected!');
-  state.clients.set(ctx, { username: "Snabes", room: "lobby" });
+  state.clients.set(ctx, { username: "Anonymous", room: "lobby" });
 
   // Listen for incoming messages
   ctx.websocket.on('message', (messageJSON) => {
@@ -88,8 +115,20 @@ app.ws.use((ctx) => {
 
 // Start server
 const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+const HOST = '0.0.0.0';
+app.listen(PORT, HOST, () => {
+  console.log(`Server running on http://${HOST}:${PORT}`);
+
+  // Detect LAN IPv4 addresses
+  const nets = os.networkInterfaces();
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name]) {
+      // Skip internal (127.0.0.1) and non-IPv4
+      if (net.family === 'IPv4' && !net.internal) {
+        console.log(`  http://${net.address}:${PORT}   (LAN)`);
+      }
+    }
+  }
 });
 
 module.exports = app;

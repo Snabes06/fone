@@ -83,9 +83,17 @@
           if(m.type === 'msg'){
             addMessage(m.message, m.from ? m.from : null);
           } else if(m.type === 'list'){
-            // server sends a comma separated string in current server implementation, handle both
-            if(Array.isArray(m.message)) updateUsers(m.message);
-            else updateUsers((m.message||'').split(/,\s*/).filter(Boolean));
+            // If server sends users array + count
+            if (Array.isArray(m.users)) {
+              updateUsers(m.users);
+              addMessage(`[info] There are ${m.count} users in #${m.room}`);
+            } 
+            // Fallback for old string-based message
+            else {
+              const list = (m.message||'').split(/,\s*/).filter(Boolean);
+              updateUsers(list);
+              addMessage(`[info] There are ${list.length} users in the channel`);
+            }
           } else if(m.type === 'info'){
             addMessage('[info] '+m.message);
           } else if(m.type === 'error'){
