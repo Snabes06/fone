@@ -7,9 +7,9 @@ This project implements a basic IRC (Internet Relay Chat) system with a WebSocke
 ## Frontend Developer ✅
 
 **Goals:**
-- [ ] Build client interface (HTML/CSS/JavaScript or a framework).  
-- [ ] Parse user IRC commands (e.g., `/join #channel`) and convert to JSON (e.g., `{"type": "JOIN", "data": "#channel"}`).  
-- [ ] Manage WebSocket connections from the client side.  
+- [x] Build client interface (HTML/CSS/JavaScript or a framework).  
+- [x] Parse user IRC commands (e.g., `/join #channel`) and convert to JSON (e.g., `{"type": "JOIN", "data": "#channel"}`).  
+- [x] Manage WebSocket connections from the client side.  
 - [ ] Display incoming messages, channel member lists, and server notifications.
 
 ---
@@ -17,9 +17,9 @@ This project implements a basic IRC (Internet Relay Chat) system with a WebSocke
 ## Backend Developer I ✅
 
 **Goals:**
-- [ ] Set up Koa server with WebSocket integration (`koa-websocket`).  
-- [ ] Implement message router for incoming JSON (`"NICK"`, `"JOIN"`, `"MSG"`).  
-- [ ] Implement server-side handling for `/quit` and `/list` commands.  
+- [x] Set up Koa server with WebSocket integration (`koa-websocket`).  
+- [x] Implement message router for incoming JSON (`"NICK"`, `"JOIN"`, `"MSG"`).  
+- [x] Implement server-side handling for `/quit` and `/list` commands.  
 - [ ] Ensure proper error handling and logging.
 
 ---
@@ -27,20 +27,20 @@ This project implements a basic IRC (Internet Relay Chat) system with a WebSocke
 ## Backend Developer II ✅
 
 **Goals:**
-- [ ] Maintain data structures for active channels (e.g., Map of channel → connected user sockets).  
-- [ ] Implement `/nick` logic: enforce unique usernames and update session/channel lists.  
-- [ ] Implement `/join` logic: add user to channel and notify members.  
-- [ ] Implement `/msg` logic: broadcast messages to all sockets in a user's current channel.
+- [x] Maintain data structures for active channels (e.g., Map of channel → connected user sockets).  
+- [x] Implement `/nick` logic: enforce unique usernames and update session/channel lists.  
+- [x] Implement `/join` logic: add user to channel and notify members.  
+- [x] Implement `/msg` logic: broadcast messages to all sockets in a user's current channel.
 
 ---
 
 ## Features Checklist
 
-- [ ] Real-time messaging via WebSockets.  
-- [ ] Multiple channels with user lists.  
+- [x] Real-time messaging via WebSockets.  
+- [x] Multiple channels with user lists.  
 - [ ] Nickname management with uniqueness checks.  
-- [ ] Server-side commands (`/quit`, `/list`).  
-- [ ] Dynamic message display in client interface.
+- [x] Server-side commands (`/quit`, `/list`).  
+- [x] Dynamic message display in client interface.
 
 ---
 
