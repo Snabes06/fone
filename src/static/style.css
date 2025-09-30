@@ -1,0 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+/* ---------- reset / base ---------- */
+* {
+	padding: 0;
+	margin: 0;
+	box-sizing: border-box;
+	font-family: 'inter';
+}
+
+:root {
+	--txtcol: #ffffff;
+	--bckcol1: #001542;
+	--bckcol2: #ffa600;
+	--h1siz: 2em;
+	--h3siz: 1.75em;
+	--psiz: 1.2em;
+	/* IRC layout specific */
+	--bg: #0f1720;
+	--panel: #0b1220;
+	--accent: #2b9cff;
+	--muted: #8892a6;
+	--text: #e6eef6;
+	}
+
+/* ---------- page background / theme images ---------- */
+body {
+	background-color: var(--bg);
+	background-position: center;
+	color: var(--text);
+	font-family: 'Inter';
+	height: 100%;
+}
+
+header {
+    background-image: url("./resources/headerbg.jpg");
+    height: 200px;
+}
+
+/* ---------- small utility classes (from screenshot) ---------- */
+.buts {
+	text-decoration: none;
+	color: var(--txtcol);
+	background-color: var(--bckcol1);
+	border: 0.5em solid var(--bckcol1);
+	border-radius: 1em;
+	font-size: 1.2em;
+	display: inline-block;
+	padding: 0.25em 0.75em;
+}
+
+.buts a {
+	text-decoration: none;
+	color: var(--txtcol);
+}
+
+/* ---------- IRC app layout (previously inline) ---------- */
+.app {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+}
+
+.main {
+	flex: 1;
+	display: flex;
+	overflow: hidden;
+}
+
+.sidebar {
+	width: 220px;
+	background: var(--panel);
+	border-right: 1px solid rgba(255, 255, 255, 0.03);
+	padding: 12px;
+	box-sizing: border-box;
+}
+
+	.users {
+	font-size: 13px;
+	color: var(--muted);
+	margin-top: 8px;
+}
+
+.users ul {
+	list-style: none;
+	padding: 0;
+	margin: 8px 0 0 0;
+}
+
+.users li {
+	padding: 6px 8px;
+	border-radius: 6px;
+	color: var(--text);
+	background: transparent;
+}
+
+.channels {
+	font-weight: 600;
+}
+
+.chat {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.messages {
+	flex: 1;
+	padding: 12px;
+	overflow: auto;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent);
+}
+
+.msg {
+	margin-bottom: 8px;
+}
+
+.meta {
+	font-size: 12px;
+	color: var(--muted);
+}
+
+.composer {
+	display: flex;
+	padding: 10px;
+	border-top: 1px solid rgba(255, 255, 255, 0.03);
+	gap: 8px;
+}
+
+.composer input[type=text] {
+	flex: 1;
+	padding: 10px;
+	border-radius: 6px;
+	border: 1px solid rgba(255, 255, 255, 0.04);
+	background: #071022;
+	color: var(--text);
+}
+
+.composer button {
+	padding: 10px 14px;
+	border-radius: 6px;
+	border: 0;
+	background: var(--accent);
+	color: #032033;
+	cursor: pointer;
+}
+
+.small {
+	font-size: 12px;
+	color: var(--muted);
+}
+
+footer.small {
+	padding: 6px 12px;
+	text-align: center;
+}

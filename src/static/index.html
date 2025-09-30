@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Fone — IRC</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Styles moved to external /style.css -->
+  </head>
+  <body>
+    <div class="app">
+      <header class="hdr">
+        <img src="/resources/headerbg.jpg" alt="">
+      </header>
+
+      <div class="main">
+        <aside class="sidebar">
+          <div class="channels">Channels</div>
+          <div class="users">
+            <div class="small">Users in current room</div>
+            <ul id="userList" aria-live="polite"></ul>
+          </div>
+        </aside>
+
+        <section class="chat">
+          <div class="messages" id="messages" role="log" aria-live="polite"></div>
+
+          <form id="controls" class="composer" action="javascript:void(0)">
+            <!-- Single input for all IRC commands and messages -->
+            <input id="ircInput" type="text" autocomplete="off" placeholder="Type a message or command (e.g. /nick me, /join #room)" />
+            <button id="sendBtn">Send</button>
+          </form>
+
+          <footer class="small">Tip: use slash commands: /nick, /join, /quit, /list</footer>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      // Minimal client script to connect to the WebSocket server and translate UI actions to server messages.
+      (function(){
+        const wsProtocol = (location.protocol === 'https:') ? 'wss:' : 'ws:';
+        const wsUrl = wsProtocol + '//' + location.host; // assumes server ws mounted on same host
+        const socket = new WebSocket(wsUrl);
+
+  const messagesEl = document.getElementById('messages');
+  const userListEl = document.getElementById('userList');
+  const ircInput = document.getElementById('ircInput');
+  const controls = document.getElementById('controls');
+
+        function addMessage(text, meta){
+          const el = document.createElement('div');
+          el.className = 'msg';
+          if(meta) el.innerHTML = '<div class="meta">'+meta+'</div>' + '<div>'+escapeHtml(text)+'</div>';
+          else el.textContent = text;
+          messagesEl.appendChild(el);
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        function updateUsers(list){
+          userListEl.innerHTML = '';
+          (list||[]).forEach(u => {
+            const li = document.createElement('li');
+            li.textContent = u;
+            userListEl.appendChild(li);
+          });
+        }
+
+        function escapeHtml(s){
+          return String(s).replace(/[&<>\\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c] || c));
+        }
+
+        socket.addEventListener('open', ()=>{
+          addMessage('Connected to server');
+          // Ask for current user list
+          socket.send(JSON.stringify({ type: 'list' }));
+        });
+
+        socket.addEventListener('message', (ev)=>{
+          let m;
+          try{ m = JSON.parse(ev.data); } catch(e){ addMessage('Server: '+ev.data); return; }
+
+          if(m.type === 'msg'){
+            addMessage(m.message, m.from ? m.from : null);
+          } else if(m.type === 'list'){
+            // server sends a comma separated string in current server implementation, handle both
+            if(Array.isArray(m.message)) updateUsers(m.message);
+            else updateUsers((m.message||'').split(/,\s*/).filter(Boolean));
+          } else if(m.type === 'info'){
+            addMessage('[info] '+m.message);
+          } else if(m.type === 'error'){
+            addMessage('[error] '+m.message);
+          } else {
+            // Generic fallback
+            addMessage(JSON.stringify(m));
+          }
+        });
+
+        socket.addEventListener('close', ()=> addMessage('Disconnected from server'));
+
+        controls.addEventListener('submit', ()=>{
+          const raw = (ircInput.value||'').trim();
+          if(!raw) return;
+
+          // Slash command handling: /cmd args...
+          if(raw.startsWith('/')){
+            const parts = raw.slice(1).split(/\s+/);
+            const cmd = parts[0].toLowerCase();
+            const arg = parts.slice(1).join(' ');
+
+            if(cmd === 'nick') {
+              socket.send(JSON.stringify({ type: 'nick', nick: arg }));
+            } else if(cmd === 'join'){
+              socket.send(JSON.stringify({ type: 'join', room: arg || 'lobby' }));
+            } else if(cmd === 'quit'){
+              socket.send(JSON.stringify({ type: 'quit' }));
+            } else if(cmd === 'list'){
+              socket.send(JSON.stringify({ type: 'list' }));
+            } else {
+              addMessage('Unknown command: '+cmd);
+            }
+          } else {
+            // Regular chat message
+            socket.send(JSON.stringify({ type: 'msg', message: raw }));
+          }
+
+          ircInput.value = '';
+          ircInput.focus();
+        });
+      })();
+    </script>
+  </body>
+  </html>
