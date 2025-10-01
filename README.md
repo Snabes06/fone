@@ -10,7 +10,7 @@ This project implements a basic IRC (Internet Relay Chat) system with a WebSocke
 - [x] Build client interface (HTML/CSS/JavaScript or a framework).  
 - [x] Parse user IRC commands (e.g., `/join #channel`) and convert to JSON (e.g., `{"type": "JOIN", "data": "#channel"}`).  
 - [x] Manage WebSocket connections from the client side.  
-- [ ] Display incoming messages, channel member lists, and server notifications.
+- [x] Display incoming messages, channel member lists, and server notifications.
 
 ---
 
@@ -20,7 +20,7 @@ This project implements a basic IRC (Internet Relay Chat) system with a WebSocke
 - [x] Set up Koa server with WebSocket integration (`koa-websocket`).  
 - [x] Implement message router for incoming JSON (`"NICK"`, `"JOIN"`, `"MSG"`).  
 - [x] Implement server-side handling for `/quit` and `/list` commands.  
-- [ ] Ensure proper error handling and logging.
+- [x] Ensure proper error handling and logging.
 
 ---
 
