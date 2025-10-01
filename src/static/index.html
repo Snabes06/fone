@@ -70,24 +70,23 @@
           return String(s).replace(/[&<>\\"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c] || c));
         }
 
-        socket.addEventListener('open', ()=>{
-          addMessage('Connected to server');
-          // Ask for current user list
-          socket.send(JSON.stringify({ type: 'list' }));
-        });
-
         socket.addEventListener('message', (ev)=>{
+          // Show raw text if server didn't send JSON
           let m;
-          try{ m = JSON.parse(ev.data); } catch(e){ addMessage('Server: '+ev.data); return; }
+          try{ m = JSON.parse(ev.data); } catch(e){ addMessage(ev.data); return; }
 
+          // Known structured message types
           if(m.type === 'msg'){
             addMessage(m.message, m.from ? m.from : null);
+          } else if(m.type === 'system'){
+            // System messages are displayed as plain chat text
+            addMessage(m.message);
           } else if(m.type === 'list'){
             // If server sends users array + count
             if (Array.isArray(m.users)) {
               updateUsers(m.users);
-              addMessage(`[info] There are ${m.count} users in #${m.room}`);
-            } 
+              if (m.room) addMessage(`[info] There are ${m.count} users in ${m.room}`);
+            }
             // Fallback for old string-based message
             else {
               const list = (m.message||'').split(/,\s*/).filter(Boolean);
@@ -99,12 +98,10 @@
           } else if(m.type === 'error'){
             addMessage('[error] '+m.message);
           } else {
-            // Generic fallback
-            addMessage(JSON.stringify(m));
+            // Generic fallback - show full object so it's readable
+            try { addMessage(JSON.stringify(m)); } catch (e) { addMessage(String(m)); }
           }
         });
-
-        socket.addEventListener('close', ()=> addMessage('Disconnected from server'));
 
         controls.addEventListener('submit', ()=>{
           const raw = (ircInput.value||'').trim();
@@ -124,6 +121,9 @@
               socket.send(JSON.stringify({ type: 'quit' }));
             } else if(cmd === 'list'){
               socket.send(JSON.stringify({ type: 'list' }));
+            } else if(cmd === 'system' || cmd === 'sys'){
+              // send system message - server may broadcast plaintext
+              socket.send(JSON.stringify({ type: 'system', message: arg }));
             } else {
               addMessage('Unknown command: '+cmd);
             }
@@ -138,4 +138,4 @@
       })();
     </script>
   </body>
-  </html>
+</html>
