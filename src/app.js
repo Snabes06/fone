@@ -8,7 +8,7 @@ const path = require('path');
 
 const ogKoa = new Koa();
 const app = websocket(ogKoa);
-ogKoa.use(serve(path.join(__dirname, '/static'), { index: 'index.html' })) // Serve static files from the 'static' directory
+ogKoa.use(serve(path.join(__dirname, '/static'), { index: 'index.html' })) // Serve static files from static/
 
 // List users in the same room
 function list(ctx) {
@@ -16,6 +16,7 @@ function list(ctx) {
   const room = info.room || "lobby";
   const users = [];
 
+  // Iterate over clients in the room
   if (state.rooms.has(room)) {
     for (const client of state.rooms.get(room)) {
       const cinfo = state.clients.get(client) || {};
@@ -23,8 +24,9 @@ function list(ctx) {
     }
   }
 
+  // Send user list to requester
   ctx.websocket.send(JSON.stringify({
-    type: "list",
+    type: 'list',
     users,                // array of usernames
     count: users.length,  // number of users
     room                  // which room this is
@@ -74,7 +76,7 @@ function quit(ctx) {
 
 // WebSocket route
 app.ws.use((ctx) => {
-  console.log('Connected!');
+  console.log('Chat client connected!');
   state.clients.set(ctx, { username: "Anonymous", room: "lobby" });
 
   // Listen for incoming messages
@@ -90,8 +92,9 @@ app.ws.use((ctx) => {
 
     const handler = handlers[message.type];
 
+    // Handles operations based on command type
     if (handler) {
-      handler(ctx, message);
+      handler(ctx, message); // Call the appropriate handler in handlers/
     } else if (message.type == 'list') {
       list(ctx);
     } else if (message.type == 'quit') {
@@ -105,7 +108,7 @@ app.ws.use((ctx) => {
   ctx.websocket.on('close', () => {
     console.log('Chat client disconnected');
     try {
-      handlers.quit(ctx);
+      state.clients.delete(ctx);
     } catch (e) {
       console.error('Error disconnecting client:', e);
       return;

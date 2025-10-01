@@ -1,6 +1,7 @@
 const state = require('../state');
 
 module.exports = function nick(ctx, message) {
+    // Prompt for nickname if not provided
     if (!message || !message.nick) {
         return ctx.websocket.send(JSON.stringify({
             type: 'error',

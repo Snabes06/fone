@@ -4,6 +4,7 @@ function join(ctx, message) {
     const info = state.clients.get(ctx) || {};
     const newRoom = message.room;
 
+    // Validate room name
     if (!newRoom) {
         ctx.websocket.send(JSON.stringify({
             type: 'error',
